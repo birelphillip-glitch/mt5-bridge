@@ -24,8 +24,9 @@ let liveMarketData = {
     lastUpdate: null
 };
 
-// Endpoint for MT5 to UPDATE data (POST)
+// IMPORTANT: Endpoint for MT5 to UPDATE data (POST)
 app.post('/update', (req, res) => {
+    console.log('📥 Received update from MT5:', req.body);
     liveMarketData = {
         ...liveMarketData,
         ...req.body,
@@ -58,7 +59,20 @@ app.get('/', (req, res) => {
     res.send('MT5 Bridge is running. Last update: ' + (liveMarketData.lastUpdate || 'never'));
 });
 
+// Also handle /update with trailing slash
+app.post('/update/', (req, res) => {
+    console.log('📥 Received update (with slash) from MT5:', req.body);
+    liveMarketData = {
+        ...liveMarketData,
+        ...req.body,
+        lastUpdate: new Date().toISOString()
+    };
+    res.json({ status: 'updated', time: liveMarketData.lastUpdate });
+});
+
 const PORT = process.env.PORT || 8891;
 app.listen(PORT, () => {
     console.log(`✅ Bridge running on port ${PORT}`);
+    console.log(`📡 POST /update - for MT5 data`);
+    console.log(`📱 GET /tick - for Android app`);
 });
